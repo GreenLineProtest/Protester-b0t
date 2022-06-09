@@ -87,6 +87,18 @@ type MsgTemplate struct {
 
 var msgTemplates = make (map[string] MsgTemplate)
 
+
+func readMd(dir string,name string) (result string) {
+	base := "./md/"
+	link := base + dir +"/" + name + ".md"
+	page, err := os.ReadFile(link)
+	if err != nil {
+		log.Panic(err)
+	}
+	page_string := bytes.NewBuffer(page).String()
+	return  page_string
+}
+
 func main() {
 
 	bot, err = tgbotapi.NewBotAPI(string(tgApiKey[0]))
@@ -109,11 +121,20 @@ func main() {
 	for update := range updates {
 
 		if update.Message != nil {
+
+
+			if update.Message.Text == "/start"{
+				userSession[update.Message.From.ID] = session{update.Message.Chat.ID, 0}
+				msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id, msgTemplates["hello"].msg_string)
+				msg.ReplyMarkup = mainMenuKeyboard
+				bot.Send(msg)
+			}
+
 			if _, ok := userSession[update.Message.From.ID]; !ok {
 
 			//	userDatabase[update.Message.From.ID] = user{update.Message.Chat.ID, 0, "", "", 0, 0, ""}
 				userSession[update.Message.From.ID] = session{update.Message.Chat.ID, 0}
-				msg := tgbotapi.NewMessage(userDatabase[update.Message.From.ID].id, msgTemplates["hello"].msg_string)
+				msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id, msgTemplates["hello"].msg_string)
 			//	msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 				msg.ReplyMarkup = mainMenuKeyboard
 				bot.Send(msg)
@@ -126,18 +147,20 @@ func main() {
 						updateDb.status = 1
 						userSession[update.Message.From.ID] = updateDb
 					}
-					msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id,"Option 2")
+					content := readMd("test","test")
+					msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id,content)
 					msg.ReplyMarkup = mainMenuKeyboard
 					bot.Send(msg)
 
 					//logic is that 1 incoming message fro the user equals one status check in database, so each status check ends with the message asking the next question
-				} else if userDatabase[update.Message.From.ID].status == 1 {
-					if updateDb, ok := userDatabase[update.Message.From.ID]; ok {
-						updateDb.exportTokenSymbol = update.Message.Text
-						updateDb.status = 2
-						userDatabase[update.Message.From.ID] = updateDb
+				} else if userSession[update.Message.From.ID].status == 1 {
+					if updateDb, ok := userSession[update.Message.From.ID]; ok {
+					//	updateDb.exportTokenSymbol = update.Message.Text
+						updateDb.status = 0
+						userSession[update.Message.From.ID] = updateDb
 					}
-					msg := tgbotapi.NewMessage(userDatabase[update.Message.From.ID].id, userDatabase[update.Message.From.ID].exportTokenSymbol+", alright. Now tell me, what's your desired supply of the tokens?")
+					msg := tgbotapi.NewMessage(userDatabase[update.Message.From.ID].id, msgTemplates["hello"].msg_string)
+					msg.ReplyMarkup = mainMenuKeyboard
 					bot.Send(msg)
 
 					//decimals asked, check if user input is uint, token type asked, keyboard is provided
