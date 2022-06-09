@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -39,8 +41,11 @@ var correctKeyboard = tgbotapi.NewReplyKeyboard(
 )
 
 //to operate the bot, put a text file containing key for your bot acquired from telegram "botfather" to the same directory with this file
-var tgApiKey, err = os.ReadFile(".secret")
-var bot, error1 = tgbotapi.NewBotAPI(string(tgApiKey))
+var tgApiKeyRaw, err = os.ReadFile(".secret")
+var tgApiKeyString = bytes.NewBuffer(tgApiKeyRaw).String()
+var tgApiKey = strings.Split(tgApiKeyString,"\n")
+
+var bot, error1 = tgbotapi.NewBotAPI(string(tgApiKey[0]))
 
 //type containing all the info about user input
 type user struct {
@@ -56,14 +61,37 @@ type user struct {
 //main database, key (int64) is telegram user id
 var userDatabase = make(map[int64]user)
 
+
+
+// session is a global struct for user session. it can be updated, loaded and saved independently to any user
+type session struct {
+	chat_id				int64
+	status				int64
+
+}
+
+// mapping from tgid to session
+var userSession = make(map[int64]session)
+
+type MsgTemplate struct {
+//	id                    int64
+	msg_string			  string
+}
+
+var msgTemplates = make (map[string] MsgTemplate)
+
 func main() {
 
-	bot, err = tgbotapi.NewBotAPI(string(tgApiKey))
+	bot, err = tgbotapi.NewBotAPI(string(tgApiKey[0]))
 	if err != nil {
 		log.Panic(err)
 	}
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
+
+	msgTemplates["hello"] = MsgTemplate{msg_string: "Heya, wanna mint your own ERC20, ERC20Snapshot or ERC20Votes? You've come to the right place! Let's begin. Tell me the name of your token!"}
+
+
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -77,7 +105,7 @@ func main() {
 			if _, ok := userDatabase[update.Message.From.ID]; !ok {
 
 				userDatabase[update.Message.From.ID] = user{update.Message.Chat.ID, 0, "", "", 0, 0, ""}
-				msg := tgbotapi.NewMessage(userDatabase[update.Message.From.ID].id, "Heya, wanna mint your own ERC20, ERC20Snapshot or ERC20Votes? You've come to the right place! Let's begin. Tell me the name of your token!")
+				msg := tgbotapi.NewMessage(userDatabase[update.Message.From.ID].id, msgTemplates["hello"].msg_string)
 				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 				bot.Send(msg)
 			} else {
