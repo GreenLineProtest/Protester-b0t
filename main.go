@@ -40,6 +40,13 @@ var correctKeyboard = tgbotapi.NewReplyKeyboard(
 	),
 )
 
+var mainMenuKeyboard = tgbotapi.NewReplyKeyboard(
+	tgbotapi.NewKeyboardButtonRow(
+		tgbotapi.NewKeyboardButton("Yes"),
+		tgbotapi.NewKeyboardButton("No")),
+)
+
+
 //to operate the bot, put a text file containing key for your bot acquired from telegram "botfather" to the same directory with this file
 var tgApiKeyRaw, err = os.ReadFile(".secret")
 var tgApiKeyString = bytes.NewBuffer(tgApiKeyRaw).String()
@@ -102,22 +109,25 @@ func main() {
 	for update := range updates {
 
 		if update.Message != nil {
-			if _, ok := userDatabase[update.Message.From.ID]; !ok {
+			if _, ok := userSession[update.Message.From.ID]; !ok {
 
-				userDatabase[update.Message.From.ID] = user{update.Message.Chat.ID, 0, "", "", 0, 0, ""}
+			//	userDatabase[update.Message.From.ID] = user{update.Message.Chat.ID, 0, "", "", 0, 0, ""}
+				userSession[update.Message.From.ID] = session{update.Message.Chat.ID, 0}
 				msg := tgbotapi.NewMessage(userDatabase[update.Message.From.ID].id, msgTemplates["hello"].msg_string)
-				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+			//	msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+				msg.ReplyMarkup = mainMenuKeyboard
 				bot.Send(msg)
 			} else {
 
 				//first check for user status, (for a new user status 0 is set automatically), then user reply for the first bot message is logged to a database as name AND user status is updated
-				if userDatabase[update.Message.From.ID].status == 0 {
-					if updateDb, ok := userDatabase[update.Message.From.ID]; ok {
-						updateDb.exportTokenName = update.Message.Text
+				if userSession[update.Message.From.ID].status == 0 {
+					if updateDb, ok := userSession[update.Message.From.ID]; ok {
+					//	updateDb.exportTokenName = update.Message.Text
 						updateDb.status = 1
-						userDatabase[update.Message.From.ID] = updateDb
+						userSession[update.Message.From.ID] = updateDb
 					}
-					msg := tgbotapi.NewMessage(userDatabase[update.Message.From.ID].id, userDatabase[update.Message.From.ID].exportTokenName+"? That's a cool name! Now tell me the symbol of your token? Usually it's like Bitcoin - BTC, you get the idea")
+					msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id,"Option 2")
+					msg.ReplyMarkup = mainMenuKeyboard
 					bot.Send(msg)
 
 					//logic is that 1 incoming message fro the user equals one status check in database, so each status check ends with the message asking the next question
