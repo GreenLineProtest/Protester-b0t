@@ -108,7 +108,7 @@ func main() {
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	msgTemplates["hello"] = MsgTemplate{msg_string: "Heya, wanna mint your own ERC20, ERC20Snapshot or ERC20Votes? You've come to the right place! Let's begin. Tell me the name of your token!"}
+	msgTemplates["hello"] = MsgTemplate{msg_string: "Hello, this is greating message"}
 
 
 
