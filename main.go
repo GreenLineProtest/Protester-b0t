@@ -147,18 +147,35 @@ func main() {
 
 				//first check for user status, (for a new user status 0 is set automatically), then user reply for the first bot message is logged to a database as name AND user status is updated
 				if userSession[update.Message.From.ID].status == 0 {
+					if update.Message.Text == "Community" || update.Message.Text == "Fundrise" || update.Message.Text == "Marketing" || update.Message.Text == "PR" || update.Message.Text == "DirectAction"  {
+						var content string
+						
+						if update.Message.Text == "Community" {
+							content = readMd("community_managment","README")
+						} else if update.Message.Text == "Fundrise" {
+							content = readMd("fundrise","README")
+						} else if update.Message.Text == "Marketing" {
+							content = readMd("marketing","README")
+						} else if update.Message.Text == "PR" {
+							content = readMd("PR","README")
+						} else if update.Message.Text == "DirectAction" {
+							content = readMd("bo","README")
+						}
+					
+					
+					
 					if updateDb, ok := userSession[update.Message.From.ID]; ok {
 					//	updateDb.exportTokenName = update.Message.Text
 						updateDb.status = 1
 						userSession[update.Message.From.ID] = updateDb
 					}
-					content := readMd("test","test")
+				//	content := readMd("test","test")
 					msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id,content)
 					msg.ReplyMarkup = mainMenuKeyboard
 					bot.Send(msg)
 
 					//logic is that 1 incoming message fro the user equals one status check in database, so each status check ends with the message asking the next question
-				} else if userSession[update.Message.From.ID].status == 1 {
+				}} else if userSession[update.Message.From.ID].status == 1 {
 				
 					if update.Message.Text == "Community" || update.Message.Text == "Fundrise" || update.Message.Text == "Marketing" || update.Message.Text == "PR" || update.Message.Text == "DirectAction"  {
 						var content string
