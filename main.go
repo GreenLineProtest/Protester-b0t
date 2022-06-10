@@ -42,8 +42,13 @@ var correctKeyboard = tgbotapi.NewReplyKeyboard(
 
 var mainMenuKeyboard = tgbotapi.NewReplyKeyboard(
 	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("Yes"),
-		tgbotapi.NewKeyboardButton("No")),
+		tgbotapi.NewKeyboardButton("Community"),
+		tgbotapi.NewKeyboardButton("Fundrise"),
+		tgbotapi.NewKeyboardButton("Marketing"),
+		tgbotapi.NewKeyboardButton("PR"),
+		tgbotapi.NewKeyboardButton("DirectAction"),
+	),
+				
 )
 
 
@@ -154,15 +159,33 @@ func main() {
 
 					//logic is that 1 incoming message fro the user equals one status check in database, so each status check ends with the message asking the next question
 				} else if userSession[update.Message.From.ID].status == 1 {
+				
+					if update.Message.Text == "Community" || update.Message.Text == "Fundrise" || update.Message.Text == "Marketing" || update.Message.Text == "PR" || update.Message.Text == "DirectAction"  {
+						var content string
+						
+						if update.Message.Text == "Community" {
+							content = readMd("community_managment","README")
+						} else if update.Message.Text == "Fundrise" {
+							content = readMd("fundrise","README")
+						} else if update.Message.Text == "Marketing" {
+							content = readMd("marketing","README")
+						} else if update.Message.Text == "PR" {
+							content = readMd("PR","README")
+						} else if update.Message.Text == "DirectAction" {
+							content = readMd("bo","README")
+						}
+						
+				
 					if updateDb, ok := userSession[update.Message.From.ID]; ok {
 					//	updateDb.exportTokenSymbol = update.Message.Text
 						updateDb.status = 0
 						userSession[update.Message.From.ID] = updateDb
 					}
-					msg := tgbotapi.NewMessage(userDatabase[update.Message.From.ID].id, msgTemplates["hello"].msg_string)
+					
+					msg := tgbotapi.NewMessage(userDatabase[update.Message.From.ID].id, content)
 					msg.ReplyMarkup = mainMenuKeyboard
 					bot.Send(msg)
-
+				}
 					//decimals asked, check if user input is uint, token type asked, keyboard is provided
 				} else if userDatabase[update.Message.From.ID].status == 2 {
 					TokenSupplyString := update.Message.Text
