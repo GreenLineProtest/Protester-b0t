@@ -23,10 +23,13 @@ var mainMenuKeyboard = tgbotapi.NewReplyKeyboard(
 	tgbotapi.NewKeyboardButtonRow(
 		tgbotapi.NewKeyboardButton("Community"),
 		tgbotapi.NewKeyboardButton("Fundrise"),
+	),
+	tgbotapi.NewKeyboardButtonRow(
 		tgbotapi.NewKeyboardButton("Marketing"),
 		tgbotapi.NewKeyboardButton("PR"),
 		tgbotapi.NewKeyboardButton("DirectAction"),
 	),
+	
 				
 )
 
