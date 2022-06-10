@@ -11,15 +11,6 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-//Those are keyboards that appear for some of the questions
-var numericKeyboard = tgbotapi.NewReplyKeyboard(
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("ERC20"),
-		tgbotapi.NewKeyboardButton("ERC20Snapshot"),
-	),
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("ERC20Votes")),
-)
 
 var yesNoKeyboard = tgbotapi.NewReplyKeyboard(
 	tgbotapi.NewKeyboardButtonRow(
@@ -27,19 +18,6 @@ var yesNoKeyboard = tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButton("No")),
 )
 
-var correctKeyboard = tgbotapi.NewReplyKeyboard(
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("Name")),
-
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("Symbol"),
-		tgbotapi.NewKeyboardButton("Supply"),
-		tgbotapi.NewKeyboardButton("Type")),
-
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("It's all correct"),
-	),
-)
 
 var mainMenuKeyboard = tgbotapi.NewReplyKeyboard(
 	tgbotapi.NewKeyboardButtonRow(
