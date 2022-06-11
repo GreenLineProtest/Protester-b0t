@@ -96,8 +96,9 @@ func main() {
 
 
 			if update.Message.Text == "/start"{
+				content := readMd("hello","README")
 				userSession[update.Message.From.ID] = session{update.Message.Chat.ID, 0}
-				msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id, msgTemplates["hello"].msg_string)
+				msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id, content)
 				msg.ReplyMarkup = mainMenuKeyboard
 				bot.Send(msg)
 			}
@@ -106,7 +107,8 @@ func main() {
 
 			//	userDatabase[update.Message.From.ID] = user{update.Message.Chat.ID, 0, "", "", 0, 0, ""}
 				userSession[update.Message.From.ID] = session{update.Message.Chat.ID, 0}
-				msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id, msgTemplates["hello"].msg_string)
+				content := readMd("hello","README")
+				msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id, content)
 			//	msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 				msg.ReplyMarkup = mainMenuKeyboard
 				bot.Send(msg)
