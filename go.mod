@@ -1,4 +1,4 @@
-module github.com/jackbekket/Protester-b0t
+module github.com/GreenLineProtest/Protester-b0t
 
 go 1.17
 
