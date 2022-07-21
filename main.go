@@ -1,3 +1,7 @@
+/* IMPORTANT NOTE!!
+
+When formatting text for entries, use _text_ for italic, **text** for bold, otherwise it won't work due to telegram API parser issues  */
+
 package main
 
 import (
@@ -20,6 +24,7 @@ var yesNoKeyboard = tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButton("No")),
 )
 
+//TODO: Add more keyboards (for the god of keyboards)
 var mainMenuKeyboard = tgbotapi.NewReplyKeyboard(
 	tgbotapi.NewKeyboardButtonRow(
 		tgbotapi.NewKeyboardButton("Community"),
@@ -97,6 +102,7 @@ func main() {
 
 				userSession[update.Message.From.ID] = session{update.Message.Chat.ID, 0}
 				msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id, content)
+				//TODO: add formatting below to everything
 				msg.ParseMode = "Markdown"
 				msg.ReplyMarkup = mainMenuKeyboard
 				bot.Send(msg)
