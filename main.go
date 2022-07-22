@@ -1,6 +1,6 @@
 /* IMPORTANT NOTE!!
 
-When formatting text for entries, use _text_ for italic, **text** for bold, otherwise it won't work due to telegram API parser issues  */
+When formatting text for entries, use _text_ for italic, ***text*** for bold, otherwise it won't work due to telegram API parser issues  */
 
 package main
 
@@ -10,18 +10,11 @@ import (
 	b64 "encoding/base64"
 	"log"
 	"os"
-
-	//"strconv"
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/google/go-github/v45/github"
-)
-
-var yesNoKeyboard = tgbotapi.NewReplyKeyboard(
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("Yes"),
-		tgbotapi.NewKeyboardButton("No")),
+	//"strconv"
 )
 
 //TODO: Add more keyboards (for the god of keyboards)
@@ -31,9 +24,18 @@ var mainMenuKeyboard = tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButton("Fundrise"),
 	),
 	tgbotapi.NewKeyboardButtonRow(
+		tgbotapi.NewKeyboardButton("Direct action"),
+	),
+	tgbotapi.NewKeyboardButtonRow(
 		tgbotapi.NewKeyboardButton("Marketing"),
 		tgbotapi.NewKeyboardButton("PR"),
-		tgbotapi.NewKeyboardButton("DirectAction"),
+	),
+)
+
+var PRKeyboard = tgbotapi.NewReplyKeyboard(
+	tgbotapi.NewKeyboardButtonRow(
+		tgbotapi.NewKeyboardButton("SMM"),
+		tgbotapi.NewKeyboardButton("News management"),
 	),
 )
 
@@ -53,26 +55,9 @@ type session struct {
 // mapping from tgid to session
 var userSession = make(map[int64]session)
 
-type MsgTemplate struct {
-	//	id                    int64
-	msg_string string
-}
-
-var msgTemplates = make(map[string]MsgTemplate)
-
-func readMd(dir string, name string) (result string) {
-	base := "./md/"
-	link := base + dir + "/" + name + ".md"
-	page, err := os.ReadFile(link)
-	if err != nil {
-		log.Panic(err)
-	}
-	page_string := bytes.NewBuffer(page).String()
-	return page_string
-}
-
 func main() {
 
+	//those are used to get info from our GitHub.
 	ctx := context.Background()
 	owner := "GreenLineProtest"
 	repo := "Protester-b0t"
@@ -83,7 +68,7 @@ func main() {
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	msgTemplates["hello"] = MsgTemplate{msg_string: "Hello, this is greating message"}
+	// msgTemplates["hello"] = MsgTemplate{msg_string: "Hello, this is greating message"}
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -95,22 +80,9 @@ func main() {
 
 		if update.Message != nil {
 
-			if update.Message.Text == "/start" {
-				path := "md/hello/README.md"
-				readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
-				content := decode(readcontent)
-
-				userSession[update.Message.From.ID] = session{update.Message.Chat.ID, 0}
-				msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id, content)
-				//TODO: add formatting below to everything
-				msg.ParseMode = "Markdown"
-				msg.ReplyMarkup = mainMenuKeyboard
-				bot.Send(msg)
-			}
-
+			//greetings part
 			if _, ok := userSession[update.Message.From.ID]; !ok {
 
-				//	userDatabase[update.Message.From.ID] = user{update.Message.Chat.ID, 0, "", "", 0, 0, ""}
 				userSession[update.Message.From.ID] = session{update.Message.Chat.ID, 0}
 				path := "md/hello/README.md"
 				readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
@@ -119,95 +91,80 @@ func main() {
 				msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id, content)
 				//	msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 				msg.ReplyMarkup = mainMenuKeyboard
+				msg.ParseMode = "Markdown"
 				bot.Send(msg)
+
 			} else {
 
-				//first check for user status, (for a new user status 0 is set automatically), then user reply for the first bot message is logged to a database as name AND user status is updated
 				if userSession[update.Message.From.ID].status == 0 {
-					if update.Message.Text == "Community" || update.Message.Text == "Fundrise" || update.Message.Text == "Marketing" || update.Message.Text == "PR" || update.Message.Text == "DirectAction" {
+
+					//this block is used ONLY for switching keyboards, so categories system may be implemented.
+					if update.Message.Text == "PR" ||
+						// update.Message.Text == "Fundrise" ||
+						// update.Message.Text == "Marketing" ||
+						// update.Message.Text == "Community" ||
+						update.Message.Text == "Direct action" {
+
+						switch update.Message.Text {
+						case "PR":
+							msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id, "Какое направление?")
+							msg.ReplyMarkup = PRKeyboard
+							bot.Request(msg)
+
+						}
+
+						//this block is used for sending actual text
+					} else if update.Message.Text == "Community" ||
+						update.Message.Text == "Fundrise" ||
+						update.Message.Text == "Marketing" ||
+						update.Message.Text == "Direct action" ||
+						update.Message.Text == "News management" ||
+						update.Message.Text == "SMM" {
+
 						var content string
 
-						if update.Message.Text == "Community" {
+						switch update.Message.Text {
+						case "Community":
 							path := "md/community_managment/README.md"
 							readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
 							content = decode(readcontent)
 
-						} else if update.Message.Text == "Fundrise" {
+						case "Fundrise":
 							path := "md/fundrise/README.md"
 							readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
 							content = decode(readcontent)
 
-						} else if update.Message.Text == "Marketing" {
+						case "Marketing":
 							path := "md/marketing/README.md"
 							readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
 							content = decode(readcontent)
 
-						} else if update.Message.Text == "PR" {
-							path := "md/PR/README.md"
-							readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
-							content = decode(readcontent)
-
-						} else if update.Message.Text == "DirectAction" {
+						case "Direct action":
 							path := "md/bo/README.md"
 							readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
 							content = decode(readcontent)
+
+						//PR
+						case "News management":
+							path := "md/PR/NewsManagement.md"
+							readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
+							content = decode(readcontent)
+
+						case "SMM":
+							path := "md/PR/SMM.md"
+							readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
+							content = decode(readcontent)
+
 						}
 
-						if updateDb, ok := userSession[update.Message.From.ID]; ok {
-							//	updateDb.exportTokenName = update.Message.Text
-							updateDb.status = 1
-							userSession[update.Message.From.ID] = updateDb
-						}
 						//	content := readMd("test","test")
 						msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id, content)
 						msg.ReplyMarkup = mainMenuKeyboard
 						bot.Send(msg)
 
 					}
-
-					//logic is that 1 incoming message fro the user equals one status check in database, so each status check ends with the message asking the next question
-				} else if userSession[update.Message.From.ID].status == 1 {
-
-					if update.Message.Text == "Community" || update.Message.Text == "Fundrise" || update.Message.Text == "Marketing" || update.Message.Text == "PR" || update.Message.Text == "DirectAction" {
-						var content string
-
-						if update.Message.Text == "Community" {
-							path := "md/community_managment/README.md"
-							readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
-							content = decode(readcontent)
-
-						} else if update.Message.Text == "Fundrise" {
-							path := "md/fundrise/README.md"
-							readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
-							content = decode(readcontent)
-
-						} else if update.Message.Text == "Marketing" {
-							path := "md/marketing/README.md"
-							readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
-							content = decode(readcontent)
-
-						} else if update.Message.Text == "PR" {
-							path := "md/PR/README.md"
-							readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
-							content = decode(readcontent)
-
-						} else if update.Message.Text == "DirectAction" {
-							path := "md/bo/README.md"
-							readcontent, _, _, _ := client.Repositories.GetContents(ctx, owner, repo, path, nil)
-							content = decode(readcontent)
-						}
-
-						if updateDb, ok := userSession[update.Message.From.ID]; ok {
-							//	updateDb.exportTokenSymbol = update.Message.Text
-							updateDb.status = 0
-							userSession[update.Message.From.ID] = updateDb
-						}
-
-						msg := tgbotapi.NewMessage(userSession[update.Message.From.ID].chat_id, content)
-						msg.ReplyMarkup = mainMenuKeyboard
-						bot.Send(msg)
-					}
 				}
+
 			}
 		}
 	}
